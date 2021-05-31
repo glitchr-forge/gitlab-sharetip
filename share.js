@@ -1,4 +1,4 @@
-document.body.addEventListener('click', function (e) {
+window.addEventListener('click', function (e) {
 
     var button = null;
     if(e.target && e.target.nodeName == "BUTTON") button = $(e.target);
@@ -59,7 +59,7 @@ document.body.addEventListener('click', function (e) {
     });
 });
 
-document.body.addEventListener('mouseup', function (e) {
+window.addEventListener('mouseup', function (e) {
 
     if (typeof window.getSelection == 'undefined') return;
 
