@@ -57,8 +57,10 @@ $.fn.serializeObject = function () {
         if("debug" in options)
             debug = options["debug"];
 
-        Sharetip.configure({list: list});
         Sharetip.configure(options);
+        if(list.length) 
+            Sharetip.configure({list: list});
+
         ready = true;
 
         if (debug) console.log("Sharetip is ready.");
@@ -240,6 +242,7 @@ $.fn.serializeObject = function () {
                         range.item(0);
 
         var text      = selection.toString();
+
         if (text == undefined || text == "" || $(parent).closest("form").length) {
             Sharetip.clear();
             return;
