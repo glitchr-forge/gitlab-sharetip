@@ -1,116 +1,113 @@
-$.fn.serializeObject = function() {
-    var o = {};
-    var a = this.serializeArray();
-    $.each(a, function() {
-        if (o[this.name]) {
-            if (!o[this.name].push) {
-                o[this.name] = [o[this.name]];
-            }
-            o[this.name].push(this.value || '');
-        } else {
-            o[this.name] = this.value || '';
-        }
-    });
-    return o;
-};
-
-;(function (root, factory) {
+(function (root, factory) {
 
     if (typeof define === 'function' && define.amd) {
         define(factory);
     } else if (typeof exports === 'object') {
         module.exports = factory();
     } else {
-        root.Infinity = factory();
+        root.Sharetip = factory();
     }
 
 })(this, function () {
 
-    var Infinity = {};
-        Infinity.version = '0.1.0';
- 
-    var Dict = Infinity.dict = {};
-    var Instance = Infinity.instance = undefined;
-    var Settings = Infinity.settings = {
-        selector        : ".infinity",
-        loader          : ".infinity-loader",
-        autocomplete    : "/autocomplete",
-        throttle        : "500ms",
-        scrollThreshold : 0.20,
-        itemThreshold   : 5,
-        focus           : true
+    $.fn.serializeObject = function () {
+
+        var o = {};
+        var a = this.serializeArray();
+        $.each(a, function () {
+            if (o[this.name]) {
+                if (!o[this.name].push) {
+                    o[this.name] = [o[this.name]];
+                }
+                o[this.name].push(this.value || '');
+            } else {
+                o[this.name] = this.value || '';
+            }
+        });
+        return o;
     };
 
-    const State = Infinity.state = {
-        PLAY         : "play",
-        SHOW         : "show",
-        PREVENT      : "prevent", // Prevent going to this image
-        EMPTY        : "empty",
-        ACTIVE       : "active",  // Overhead time until animation ends
-        TIMEOUT      : "timeout", // Force Infinity time reset (when clicking on backward or forward button)
-       
-        REWIND       : "rewind",   // Reset to initial slide and keep current state (pause or play)
-        FASTBACKWARD : "fast-backward",
-        BACKWARD     : "backward",
-        FORWARD      : "forward",
-        FASTFORWARD  : "fast-forward",
+    var Sharetip = window.Sharetip = {};
+    Sharetip.version = '0.1.0';
+
+    var Settings = Sharetip.settings = {
+
+        threshold:5,
+        list: {},
+        icons: {
+            "facebook": "fab fa-facebook", 
+            "pinterest": "fab fa-pinterest",
+            "copy": "fas fa-paperclip", 
+            "email": "fas fa-at"
+        }
     };
 
     var debug = false;
     var ready = false;
-
-    Infinity.parseDuration = function(str) { 
-
-        var array = String(str).split(", ");
-            array = array.map(function(t) {
-
-                if(String(t).endsWith("ms")) return parseFloat(String(t))/1000;
-                return parseFloat(String(t));    
-            });
-
-        return Math.max(...array);
+    Sharetip.clear = function() {
+        
+        $("#sharetip").each(function() {
+            this.remove();
+        });
     }
 
-    Infinity.get = function(key) {
+    Sharetip.ready = function (list = {}, options = {}) {
+
+        if("debug" in options)
+            debug = options["debug"];
+
+        Sharetip.configure(options);
+        if(list.length) 
+            Sharetip.configure({list: list});
+
+        ready = true;
+
+        if (debug) console.log("Sharetip is ready.");
+        dispatchEvent(new Event('sharer:ready'));
+
+        return this;
+    };
+
+    Sharetip.get = function(key) {
     
-        if(key in Infinity.settings) 
-            return Infinity.settings[key];
+        if(key in Sharetip.settings) 
+            return Sharetip.settings[key];
 
         return null;
     };
 
-    Infinity.set = function(key, value) {
+    Sharetip.set = function(key, value) {
     
-        Infinity.settings[key] = value;
+        Sharetip.settings[key] = value;
         return this;
     };
 
-    Infinity.add = function(key, value) {
+    Sharetip.add = function(key, value) {
     
-        if(! (key in Infinity.settings))
-            Infinity.settings[key] = [];
+        if(! (key in Sharetip.settings))
+            Sharetip.settings[key] = [];
 
-        if (Infinity.settings[key].indexOf(value) === -1)
-            Infinity.settings[key].push(value);
+        if (Sharetip.settings[key].indexOf(value) === -1)
+            Sharetip.settings[key].push(value);
 
         return this;
     };
 
-    Infinity.remove = function(key, value) {
-    
-        if(key in Infinity.settings) {
-        
-            Infinity.settings[key] = Infinity.settings[key].filter(function(setting, index, arr){ 
+    Sharetip.remove = function(key, value) {
+
+        if(key in Sharetip.settings) {
+
+            Sharetip.settings[key] = Sharetip.settings[key].filter(function(setting, index, arr){ 
                 return value != setting;
             });
 
-            return Infinity.settings[key];
+            return Sharetip.settings[key];
         }
-        
+
         return null;
     };
 
-    Infinity.configure = function (options) {
+    Sharetip.configure = function (options) {
 
         var key, value;
         for (key in options) {
@@ -118,160 +115,176 @@ $.fn.serializeObject = function() {
             if (value !== undefined && options.hasOwnProperty(key)) Settings[key] = value;
         }
 
-        if(debug) console.log("Infinity configuration: ", Settings);
+        if (debug) console.log("Sharetip configuration: ", Settings);
 
         return this;
     };
-
-    Infinity.isReady = function() { return ready; }
-
-    Infinity.uuidv4 = function() {
-        return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-          (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-        );
-    };
-
-    Infinity.ready = function (options = {}) {
-
-        if("debug" in options)
-            debug = options["debug"];
-
-        Infinity.configure(options);
-        ready = true;
-
-        if(debug) console.log("Infinity is ready.");
-        dispatchEvent(new Event('Infinity:ready'));
-
-        if (Infinity.empty())
-            Infinity.onLoad();
-
-        Infinity.run(function() {
-
-            if (Infinity.get("autoplay")) {
-                
-                $(Infinity.get("selector")).each(function() {
-                    if($(this).hasClass("active") || $(this).hasClass("play")) Infinity.play(this);
-                });
-            }
-        });
-
-        return this;
-    };
-
-    Infinity.empty  = function() { return Object.keys(Infinity.dict).length === 0; } 
-    Infinity.clear  = function() { Infinity.dict = {}; } 
-    Infinity.onLoad = function(selector = Infinity.get("selector")) {
-
-        Infinity.clear();
-        $(selector).each(function() {
-
-            this.id = this.id || Infinity.uuidv4();
-            Infinity.dict[this.id] = {
-                container: this, instance: undefined, transitions: undefined, transitions_default: undefined,
-                first:undefined, last:undefined, onHold:false,
-                progress:0, timeout: undefined, isHover:false};
-
-            var entries = $(this).find(".Infinity-entry");
-            if(entries.length < 1) $(this).addClass(Infinity.state.EMPTY);
-            else $(this).addClass(Infinity.state.REMOVE);
-
-            var observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    var attributeValue = $(mutation.target).prop(mutation.attributeName);
-                    console.log("Infinity "+mutation.target.id+" changed to:", attributeValue);
-                });
-            });
-
-            if(debug > 1) observer.observe(this, { attributes: true, attributeFilter: ['class']});
-
-            Infinity.run(function() {
-
-                if (Infinity.get("autoplay"))
-                    Infinity.play(this);
-
-            }.bind(this));
-        });
-
-        if(debug) {
-            
-            var Infinitys = Infinity.length(selector);
-            if (Infinitys.length < 1) console.log("Infinity: no Infinity found");
-            else {
-
-                console.log("Infinity: " + Infinitys.length + " Infinity(s) found");
-                $(Infinitys).each(function(index) { console.log("- Slider #"+(index+1)+" ("+ this + " image(s) found)", $(selector)[index] ); });
-            }
-        }
-    }
-
-    Infinity.run = function(callback = function() {}) {
-
-        if(!Infinity.isReady()) return;
-
-        Infinity.update();
-
-        callback();
-    }
-
-    Infinity.modulo = function mod(n, m) { return ((n % m) + m) % m; }
     
-    Infinity.throttle = function(fn = function() {}, throttle = 0)
+    Sharetip.onClick = function (e)
     {
-        if(throttle == 0) fn();
-        else setTimeout(fn, throttle);
+        var button = null;
+        
+        if(e.target && e.target.nodeName == "BUTTON") button = $(e.target);
+        else if(e.target.parentNode && e.target.parentNode.nodeName == "BUTTON") button = $(e.target.parentNode);
+        if(!button) return;
+
+        buttonId = $(button).attr("id");
+        if(!buttonId || !buttonId.startsWith("sharetip-")) return;
+
+        e.preventDefault();
+
+        var title = $("head > title")[0].innerText;
+        var text = $("#sharetip").attr("data-content").trim();
+        if(text) {
+
+            var first = text.charAt(0);
+            if (first === first.toLowerCase() && first !== first.toUpperCase())
+                text  = "[..] " + text;
+
+            var last = text.charAt(text.length-1);
+            if (!last.endsWith("."))
+                text += " [..]";
+
+            text = "\"" + text + "\"";
+        }
+
+        app_id = button.attr("data-id");
+        switch(buttonId) {
+
+            case 'sharetip-twitter':
+                window.open("https://twitter.com/intent/tweet?text="+text+"&url="+window.location, '_blank');
+            break;
+            case 'sharetip-facebook':
+                window.open("https://www.facebook.com/sharer/sharer.php?quote="+text+"&u="+window.location, '_blank');
+            break;
+            case 'sharetip-pinterest':
+                window.open("http://pinterest.com/pin/create/button/?description="+text+"&url="+window.location, '_blank');
+            break;
+            case 'sharetip-tumblr':
+                window.open("http://www.tumblr.com/share/link?title="+title+"&description="+text+"&url="+window.location, '_blank');
+            break;
+            case 'sharetip-googleplus':
+                window.open("https://plus.google.com/share?url="+window.location, '_blank');
+            break;
+            case 'sharetip-linkedin':
+                window.open("http://www.linkedin.com/shareArticle?mini=true&title="+title+"&summary="+text+"&url="+window.location, '_blank');
+            break;
+            case 'sharetip-copy':
+
+                $(document).bind('copy', (event) => {
+                        event.clipboardData.setData('text/plain', text+"\n"+window.location);
+                        event.preventDefault();
+                });
+
+                document.execCommand("copy");
+            break;
+
+            case 'sharetip-email':
+
+                window.location = "mailto:"+
+                    "?subject="+document.title+
+                    "&body="+text+"%0D%0A"+window.location;
+                break;
+
+            default: console.error("Service \""+buttonId+"\" not found.");
+        }
+
+        window.getSelection().removeAllRanges();
+        Sharetip.clear();
     }
 
-    Infinity.callback = function(method = null, data = null, xhr = null, request = null)
+    Sharetip.getRandomColor = function(hex = '0123456789ABCDEF', alpha = 1) {
+
+        var color = '#';
+
+        for (var i = 0; i < 6; i++)
+            color += hex[Math.floor(Math.random() * hex.length)];
+
+        alpha = hex[Math.floor(alpha * hex.length)];
+
+        return color + alpha + alpha;
+    }
+
+    Sharetip.getLinks = function()
     {
+        var ul = document.createElement("ul");
 
+        ul.innerHTML = "";
+        for (var i = 0, N = Settings.list.length; i < N; i++)
+            ul.innerHTML += "<li><button id='sharetip-"+Settings.list[i]+"'><i class='"+Settings.icons[Settings.list[i]]+"'></button></li>";
+
+        return ul;
     }
 
-    Infinity.scrollPercent = function()
+    var mouse0 = {};
+    Sharetip.onMouseDown = function(e)
+    {        
+        mouse0 = {
+            x:e.clientX+window.scrollX,
+            y:e.clientY+window.scrollY
+        };
+    }
+    Sharetip.onMouseUp = function(e)
     {
+        if (typeof window.getSelection == 'undefined') return;
 
+        var selection = window.getSelection();
+        if(!selection) return;
+
+        if(selection.rangeCount < 1) return;
+
+        var range     = selection.getRangeAt(0);
+        if(!range) return;
+
+        var parent    = range.commonAncestorContainer ? range.commonAncestorContainer :
+                        range.parentElement ? range.parentElement() :
+                        range.item(0);
+
+        var text      = selection.toString();
+
+        if (text == undefined || text == "" || $(parent).closest("form").length) {
+            Sharetip.clear();
+            return;
+        }
+    
+        var sharetip = $("#sharetip");
+        if (sharetip && sharetip.attr("data-content") == text) return;
+        Sharetip.clear();
+                    
+        var mouse = {
+            x:e.clientX+window.scrollX,
+            y:e.clientY+window.scrollY
+        };
+
+        if(Math.hypot(mouse.x-mouse0.x, mouse.y-mouse0.y) < Settings.threshold)
+            return;
+
+        sharetip = document.createElement("div");
+        $(sharetip).attr("id", "sharetip");
+        $(sharetip).attr("data-content", text);
+        $(sharetip).css("position", "absolute");
+        $(sharetip).css("left", mouse.x);
+        $(sharetip).css("top", mouse.y);
+        $(sharetip).append(Sharetip.getLinks());
+
+        var links = $(sharetip).find("ul");
+        if( links.innerHTML == "") return;
+
+        links.attr("style", "background-color: "+Sharetip.getRandomColor("0123456789ABC", 0.8)+";");
+        $("body").append(sharetip);
     }
 
-
-    Infinity.itemNumber = function()
+    Sharetip.onLoad = function ()
     {
+        Sharetip.clear();
 
+        $(window).on('click', Sharetip.onClick);
+        $(window).on("mouseup", Sharetip.onMouseUp)
+        $(window).on("mousedown", Sharetip.onMouseDown)
     }
 
-    Infinity.lastItem = function()
-    {
+    $(window).on("load", function() { Sharetip.onLoad(); });
 
-    }
-
-    Infinity.getItems = function(selector) 
-    {
-
-    }
-
-    Infinity.forms = function(selector) 
-    {
-
-    }
-
-    Infinity.call = function(callback = Infinity.callback, method = null, data = null) {
-
-        // Submit ajax request..
-        var xhr = new XMLHttpRequest();
-        return jQuery.ajax({
-            url : Settings["autocomplete"],
-            type: type,
-            data: data,
-            dataType: 'html',
-            headers: Settings["headers"] || {},
-            xhr: function () { return xhr; }, 
-            success: function (html, status, request) { return callback(type, data, xhr, request); },
-            error:   function (request, ajaxOptions, thrownError) { return callback(type, data, xhr, request); }
-        });
-    }
-
-    $(document).ready(function() { Infinity.onLoad(); });
-    $(window).on("focus", function(e){ Infinity.set("focus", true); });
-    $(window).on("blur",  function(e){ Infinity.set("focus", false); });
-    $(window).on("onbeforeunload",  function(e){ Infinity.clear(); });
-
-	return Infinity;
+    
+    return Sharetip;
 });
