@@ -1,7 +1,7 @@
 {
-  "name": "@glitchr/sharetip",
-  "version": "1.0.10",
-  "description": "Sharetip tool",
+  "name": "@glitchr/infinity",
+  "version": "1.0.8",
+  "description": "Infinite scroll library",
   "main": "src/index.js",
   "repository": {
     "url": "ssh://git@gitlab.glitchr.dev:public-repository/javascript/sharetip.git",
