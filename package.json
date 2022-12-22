@@ -4,7 +4,7 @@
   "description": "Infinite scroll library",
   "main": "src/index.js",
   "repository": {
-    "url": "ssh://git@gitlab.glitchr.dev:public-repository/javascript/sharetip.git",
+    "url": "ssh://git@gitlab.glitchr.dev:public-repository/javascript/infinity.git",
     "type": "git"
   },
   "author": "Marco Meyer <marco.meyer@glitchr.io>",
