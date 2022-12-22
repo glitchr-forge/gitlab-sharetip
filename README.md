@@ -1,3 +1,1 @@
-# ShareJS
-
-Sharing library for socials
+# Infinite scrolling library
