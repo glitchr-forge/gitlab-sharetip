@@ -1,10 +1,10 @@
 {
-  "name": "@glitchr/infinity",
+  "name": "@glitchr/sharetip",
   "version": "1.0.17",
-  "description": "Infinite scroll library",
+  "description": "Sharetip tool",
   "main": "src/index.js",
   "repository": {
-    "url": "ssh://git@gitlab.glitchr.dev:public-repository/javascript/infinity.git",
+    "url": "ssh://git@gitlab.glitchr.dev:public-repository/javascript/sharetip.git",
     "type": "git"
   },
   "author": "Marco Meyer <marco.meyer@glitchr.io>",
