@@ -1,6 +1,6 @@
 {
   "name": "@glitchr/sharetip",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "description": "Sharetip tool",
   "main": "src/index.js",
   "repository": {
